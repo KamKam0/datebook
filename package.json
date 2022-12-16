@@ -1,0 +1,23 @@
+{
+  "name": "@kamkam1_0/datebook",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/KamKam0/datebook.git"
+  },
+  "bugs": {
+    "url": "https://github.com/KamKam0/datebook/issues"
+  },
+  "keywords": ["Datebook", "Calendar"],
+  "homepage": "https://github.com/KamKam0/datebook",
+  "author": "KamKam <kamkam.dev.contact@gmail.com>",
+  "license": "BSD 2",
+  "dependencies": {
+    "fs": "^0.0.1-security"
+  }
+}
