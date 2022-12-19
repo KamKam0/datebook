@@ -3,31 +3,36 @@ class Calendar{
     constructor(){
         this.title = null
         this.start = null
+        this.__start = null
         this.end = null
+        this.__end = null
         this.description = null
         this.geo = null
         this.location = null
+        this.recurrence = null
         this.trigger = "-PT2H"
         this.download_name = null
     }
 
     AddStart(startdate){
-        let che = this.CheckDate(startdate)
-        if(!che) return this
-        this.start = startdate
+        if(!this.CheckDate(startdate)) return this
+        if(this.__end !== null && (new Date(startdate)) > (new Date(this.__end))) return this
+        this.start = startdate.replaceAll("-", "").replaceAll(":", "")
+        this.__start = startdate
+        return this
+    }
+
+    AddEnd(enddate){
+        if(!this.CheckDate(enddate)) return this
+        if(this.__start !== null && (new Date(enddate)) < (new Date(this.__start))) return this
+        this.end = enddate.replaceAll("-", "").replaceAll(":", "")
+        this.__end = enddate
         return this
     }
 
     AddTitle(title){
         if(!title || typeof title !== "string" || title.length > 20) return this
         this.title = title
-        return this
-    }
-
-    AddEnd(enddate){
-        let che = this.CheckDate(enddate)
-        if(!che) return this
-        this.end = enddate
         return this
     }
 
@@ -68,16 +73,23 @@ class Calendar{
         return this
     }
 
-    async Download(restpath){
-        if(!this.title || !this.start || !this.end) return 'Error Not Possible'
-
-        let randomnumber = ""
-
-        while(randomnumber.length < 20){
-            randomnumber += Math.floor(Math.random() * 2345)
+    AddRecurrence(rythm, stop){
+        if(typeof rythm !== "string") return this
+        if(!(/(hourly|daily|weekly|monthly|yearly)/).test(rythm.toLowerCase())) return this
+        this.recurrence = {FREQ: rythm.toUpperCase()}
+        if(isNaN(stop)){
+            if(!this.CheckDate(stop)) return this
+            this.recurrence["UNTIL"] = stop.replaceAll("-", "").replaceAll(":", "")
+        }else{
+            if(String(Number(stop)).includes(".")) stop = String(Number(stop)).split(".")[0]
+            this.recurrence["COUNT"] = stop
         }
+        return this
+    }
 
-        let text = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:autoprog/kamkam\nNAME:Work\nX-WR-CALNAME:Work\nTIMEZONE-ID:Europe/Paris\nX-WR-TIMEZONE:Europe/Paris\nBEGIN:VEVENT\nUID:-${randomnumber}\nSEQUENCE:0\nDTSTAMP:${new Date(Date.now())}\nDTSTART;TZID=Europe/Paris:${String(this.start).replaceAll("-", "").replaceAll(":", "")}\nDTEND;TZID=Europe/Paris:${String(this.end).replaceAll("-", "").replaceAll(":", "")}${this.title !== null ? `\nSUMMARY:${this.title}` : ""}${this.location !== null ? `\nLOCATION:${this.location}` : ""}${this.geo !== null ? `\nGEO:${this.geo}` : ""}\nBEGIN:VALARM\nACTION:DISPLAY${this.description !== null ? `\nDESCRIPTION:${this.description}` : ""}\nTRIGGER:${this.trigger}\nEND:VALARM\nSTATUS:CONFIRMED\nEND:VEVENT\nEND:VCALENDAR`
+    async Download(restpath, state){
+        let text = this.ToText()
+        if(text === "Error") return text
 
         return new Promise((resolve, reject) => {
             function get_path(orpa, pa, name){
@@ -99,6 +111,8 @@ class Calendar{
                     totals.sort((a,b)=>a-b)
                     name = `${name}-${String((totals[totals.length - 1] + 1)) === "NaN" ? "1" : (totals[totals.length - 1] + 1)}`
                 }
+
+                if(state) return resolve({name, extension: "ics", buffer: this.ToBuffer()})
     
                 fs.writeFileSync(get_path(path, `${name}.ics`), text)
                 return resolve(name)
@@ -107,7 +121,17 @@ class Calendar{
 
     }
 
+    async getDownloadInfos(restpath){
+        return new Promise((resolve, reject) => {
+            this.Download(restpath, true)
+            .then(datas => resolve(datas))
+            .catch(datas => reject(datas))
+        })
+    }
+
     ToText(){
+
+        //let text1 = `BEGIN:VCALENDAR;VERSION:2.0;PRODID:autoprog/kamkam;NAME:Work;X-WR-CALNAME:Work;TIMEZONE-ID:Europe/Paris;X-WR-TIMEZONE:Europe/Paris;BEGIN:VEVENT;UID:-${randomnumber};SEQUENCE:0;DTSTAMP:${new Date(Date.now())};DTSTART;TZID=Europe/Paris:${String(this.start).replaceAll("-", "").replaceAll(":", "")};DTEND;TZID=Europe/Paris:${String(this.end).replaceAll("-", "").replaceAll(":", "")}${this.title !== null ? `;SUMMARY:${this.title}` : ""}${this.location !== null ? `;LOCATION:${this.location}` : ""}${this.geo !== null ? `;GEO:${this.geo}` : ""};BEGIN:VALARM;ACTION:DISPLAY${this.description !== null ? `;DESCRIPTION:${this.description}` : ""};TRIGGER:${this.trigger};END:VALARM;STATUS:CONFIRMED;END:VEVENT;END:VCALENDAR`
 
         if(!this.title || !this.start || !this.end) return 'Error'
 
@@ -117,9 +141,46 @@ class Calendar{
             randomnumber += Math.floor(Math.random() * 2345)
         }
 
-        let text = `BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:autoprog/kamkam\nNAME:Work\nX-WR-CALNAME:Work\nTIMEZONE-ID:Europe/Paris\nX-WR-TIMEZONE:Europe/Paris\nBEGIN:VEVENT\nUID:-${randomnumber}\nSEQUENCE:0\nDTSTAMP:${new Date(Date.now())}\nDTSTART;TZID=Europe/Paris:${String(this.start).replaceAll("-", "").replaceAll(":", "")}\nDTEND;TZID=Europe/Paris:${String(this.end).replaceAll("-", "").replaceAll(":", "")}${this.title !== null ? `\nSUMMARY:${this.title}` : ""}${this.location !== null ? `\nLOCATION:${this.location}` : ""}${this.geo !== null ? `\nGEO:${this.geo}` : ""}\nBEGIN:VALARM\nACTION:DISPLAY${this.description !== null ? `\nDESCRIPTION:${this.description}` : ""}\nTRIGGER:${this.trigger}\nEND:VALARM\nSTATUS:CONFIRMED\nEND:VEVENT\nEND:VCALENDAR`
+        let datas = [
+            {name: "BEGIN", value: "VCALENDAR"},
+            {name: "VERSION", value: "2.0"},
+            {name: "PRODID", value: "autoprog/kamkam"},
+            {name: "NAME", value: "Work"},
+            {name: "X-WR-CALNAME", value: "Work"},
+            {name: "TIMEZONE-ID", value: "Europe/Paris"},
+            {name: "X-WR-TIMEZONE", value: "Europe/Paris"},
+            {name: "BEGIN", value: "VEVENT"},
+            {name: "UID", value: "-"+randomnumber},
+            {name: "SEQUENCE", value: "0"},
+            {name: "DTSTAMP", value: new Date(Date.now())},
+            {name: "DTSTART;TZID=Europe/Paris", value: this.start},
+            {name: "DTEND;TZID=Europe/Paris", value: this.end},
+            {name: "SUMMARY", value: this.title},
+            {name: "LOCATION", value: this.location},
+            {name: "GEO", value: this.geo},
+            {name: "RRULE", value: this.recurrence},
+            {name: "EXRULE", value: this.exrule},
+            {name: "BEGIN", value: "VALARM"},
+            {name: "ACTION", value: "DISPLAY"},
+            {name: "TRIGGER", value: this.trigger},
+            {name: "END", value: "VALARM"},
+            {name: "STATUS", value: "CONFIRMED"},
+            {name: "END", value: "VEVENT"},
+            {name: "END", value: "VCALENDAR"}
+        ]
+
+        let text = datas.filter(da => da.value !== null && da.value !== undefined && da.value !== "").map(da => {
+            if(typeof da.value === "string") return `${da.name}:${da.value}`
+            else if(typeof da.value === "object") return `${da.name}:`+ Object.entries(da.value).filter(dat => dat[1] !== null && dat[1] !== undefined && dat[1] !== "").map(dat => `${dat[0]}=${dat[1]}`).join(";")
+        }).join("\n")
 
         return text
+    }
+
+    ToBuffer(){
+        let text = this.ToText()
+        if(text === "Error") return text
+        return Buffer.from(text, "utf-8")
     }
 
     CheckDate(da){
