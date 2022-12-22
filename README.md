@@ -70,7 +70,7 @@ let Calendar = new DateBook.Calendar()
 
 ## Download
 
-There different ways you can get the infos of your calendar.
+There are different ways you can get the infos of your calendar.
 
 ### Download name
 You have the possiblity to add a name to the file that will be created. By default, the name of the file is the date of the event.
@@ -118,15 +118,3 @@ const DateBook = require("@kamkam1_0/datebook")
 let Calendar = new DateBook.Calendar()
 Calendar.Download("/Users/johndoe/Desktop/Dev/Bot")
 ```
-
-
-
-["daily", "2"]
-
-/*
-
-    AddDownloadName(name){
-        if(!name || typeof name !== "string" || name.length > 20) return this
-        this.download_name = name
-        return this
-    }
