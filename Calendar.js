@@ -1,11 +1,13 @@
 const fs = require("fs")
 class Calendar{
+    #start;
+    #end;
     constructor(){
         this.title = null
         this.start = null
-        this.__start = null
+        this.#start = null
         this.end = null
-        this.__end = null
+        this.#end = null
         this.description = null
         this.geo = null
         this.location = null
@@ -15,18 +17,20 @@ class Calendar{
     }
 
     AddStart(startdate){
-        if(!this.CheckDate(startdate)) return this
-        if(this.__end !== null && (new Date(startdate)) > (new Date(this.__end))) return this
+        startdate = this.#CheckDate(startdate)
+        if(!startdate) return this
+        if(this.#end !== null && (new Date(startdate)) > (new Date(this.#end))) return this
         this.start = startdate.replaceAll("-", "").replaceAll(":", "")
-        this.__start = startdate
+        this.#start = startdate
         return this
     }
 
     AddEnd(enddate){
-        if(!this.CheckDate(enddate)) return this
-        if(this.__start !== null && (new Date(enddate)) < (new Date(this.__start))) return this
+        enddate = this.#CheckDate(enddate)
+        if(!enddate) return this
+        if(this.#start !== null && (new Date(enddate)) < (new Date(this.#start))) return this
         this.end = enddate.replaceAll("-", "").replaceAll(":", "")
-        this.__end = enddate
+        this.#end = enddate
         return this
     }
 
@@ -78,7 +82,8 @@ class Calendar{
         if(!(/(hourly|daily|weekly|monthly|yearly)/).test(rythm.toLowerCase())) return this
         this.recurrence = {FREQ: rythm.toUpperCase()}
         if(isNaN(stop)){
-            if(!this.CheckDate(stop)) return this
+            stop = this.#CheckDate(stop)
+            if(!stop) return this
             this.recurrence["UNTIL"] = stop.replaceAll("-", "").replaceAll(":", "")
         }else{
             if(String(Number(stop)).includes(".")) stop = String(Number(stop)).split(".")[0]
@@ -100,7 +105,8 @@ class Calendar{
                 if(require("os").platform() === "darwin") return `${orpa}/${pa.replaceAll("\\", "/")}/${name.replaceAll("\\", "/")}`
                 if(require("os").platform() === "win32")  return `${orpa}\\${pa.replaceAll("/", "\\")}\\${name.replaceAll("/", "\\")}`
             }
-            let path = `${(restpath.startsWith("/") || restpath.startsWith("C:")) ? restpath : `${get_path(process.cwd(), restpath)}`}`
+            let path = process.cwd()
+            if(restpath) path = `${(restpath.startsWith("/") || restpath.startsWith("C:")) ? restpath : `${get_path(process.cwd(), restpath)}`}`
             fs.readdir(path, (err, files) => {
                 if(err) return reject('Error path')
                 let name = String(this.start).split("T")[0]
@@ -159,7 +165,6 @@ class Calendar{
             {name: "LOCATION", value: this.location},
             {name: "GEO", value: this.geo},
             {name: "RRULE", value: this.recurrence},
-            {name: "EXRULE", value: this.exrule},
             {name: "BEGIN", value: "VALARM"},
             {name: "ACTION", value: "DISPLAY"},
             {name: "TRIGGER", value: this.trigger},
@@ -183,19 +188,40 @@ class Calendar{
         return Buffer.from(text, "utf-8")
     }
 
-    CheckDate(da){
+    #CheckDate(da){
         if(!da || typeof da !== "string") return false
-        if(!da.includes("-") || !da.includes("T") || !da.includes(":")) return false
-        if(!da.split("-").length === 3 || !da.split(":").length === 3 || !da.split("T").length === 2) return false
-        let first = da.split("-")
-        if(isNaN(first[0]) || first[0].length !== 4) return false
-        if(isNaN(first[1]) || Number(first[1]) > 12 || Number(first[1]) < 1) return false
-        if((!first[2].includes("T") || !first[2].includes(":")) || isNaN(first[2].split("T")[0]) || Number(first[2].split("T")[0]) > 31 || Number(first[2].split("T")[0]) < 1) return false
-        let second = da.split(":")
-        if((!second[0].includes("T") || !second[0].includes("-")) || isNaN(second[0].split("T")[1]) || Number(second[0].split("T")[1]) > 23 || Number(second[0].split("T")[1]) < 1) return false
-        if(isNaN(second[1]) || Number(second[1]) > 59 || Number(second[1]) < 0 || second[1].length === 1) return false
-        if(isNaN(second[2]) || Number(second[2]) > 59 || Number(second[2]) < 0 || second[2].length === 1) return false
-        return true
+        let second;
+        if(da.includes("T")){
+            second = da.split("T")[1]
+            if(second.length > 8 || !second.includes(":")) return false
+            let splitted = second.split(":").filter(e => e !== "00")
+            if(splitted.length > 3) return false
+            if(splitted.filter(e => !isNaN(e) && [1, 2].includes(String(e).length) && Number(e) < 59 && Number(e) > 0).length !== splitted.length) return false
+            if(Number(splitted[0]) > 24) return false
+            second = splitted.map(e => String(e).length === 1 ? "0"+e : e)
+            if(second.length === 1){
+                second.push("00")
+                second.push("00")
+            }else second.push("00")
+            second = second.join(":")
+            da = da.split("T")[0]
+        }
+        if(!da.includes("/") && !da.includes("-")) return false
+        if(da.includes("/")) da = treat(da, "/")
+        if(da.includes("-")) da = treat(da, "-")
+        if(!da) return false
+        return `${da}${second ? "T"+second : "T01:00:00"}`
+
+        function treat(dat, symb){
+            if(dat.length < 8 || !dat.includes(symb)) return false
+            let splitted = dat.split(symb)
+            if(splitted.length !== 3) return false
+            if(splitted.filter(e => !isNaN(e) && [1, 2, 4].includes(String(e).length) && Number(e) > 0).length !== splitted.length) return false
+            if(String(splitted[0]).length === 2 || String(splitted[0]).length === 1) splitted = splitted.reverse()
+            if(String(splitted[0]).length !== 4 || Number(splitted[1]) > 12 || Number(splitted[2]) > 31) return false
+            dat = splitted.map(e => String(e).length === 1 ? "0"+e : e).join("-")
+            return dat
+        }
     }
 }
 
