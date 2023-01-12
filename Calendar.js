@@ -3,19 +3,59 @@ class Calendar{
     #start;
     #end;
     constructor(){
+        /**
+         * @param {(string|null)} title
+         */
         this.title = null
+        /**
+         * @param {(string|null)} start
+         */
         this.start = null
+        /**
+         * @private
+         * @param {(string|null)}
+         */
         this.#start = null
+        /**
+         * @param {(string|null)} end
+         */
         this.end = null
+        /**
+         * @param {(string|null)} 
+         * @private
+         */
         this.#end = null
+        /**
+         * @param {(string|null)} description
+         */
         this.description = null
+        /**
+         * @param {(string|null)} geo
+         */
         this.geo = null
+        /**
+         * @param {(string|null)} location
+         */
         this.location = null
+        /**
+         * @param {(string|null)} recurrence
+         */
         this.recurrence = null
+        /**
+         * @param {string} trigger
+         */
         this.trigger = "-PT2H"
+        /**
+         * @param {(string|null)} download_name
+         */
         this.download_name = null
     }
 
+    /**
+     * 
+     * @param {string} startdate 
+     * @returns {Calendar}
+     */
     AddStart(startdate){
         startdate = this.#CheckDate(startdate)
         if(!startdate) return this
@@ -25,7 +65,13 @@ class Calendar{
         return this
     }
 
+    /**
+     * 
+     * @param {string} startdate 
+     * @returns {Calendar}
+     */
     AddEnd(enddate){
+        this.AddStart()
         enddate = this.#CheckDate(enddate)
         if(!enddate) return this
         if(this.#start !== null && (new Date(enddate)) < (new Date(this.#start))) return this
@@ -34,18 +80,33 @@ class Calendar{
         return this
     }
 
+    /**
+     * 
+     * @param {string} title 
+     * @returns {Calendar}
+     */
     AddTitle(title){
         if(!title || typeof title !== "string" || title.length > 20) return this
         this.title = title
         return this
     }
 
+    /**
+     * 
+     * @param {string} description 
+     * @returns {Calendar}
+     */
     AddDescription(description){
         if(!description || typeof description !== "string" || description.length > 50) return this
         this.description = description
         return this
     }
 
+    /**
+     * 
+     * @param {string} geolocation 
+     * @returns {Calendar}
+     */
     AddGeo(geolocation){
         if(!geolocation || typeof geolocation !== "string") return this
         if(!geolocation.includes(",") && !geolocation.includes(";")) return this
@@ -57,6 +118,11 @@ class Calendar{
         return this
     }
 
+    /**
+     * 
+     * @param {string} location 
+     * @returns {Calendar}
+     */
     AddLocation(location){
         if(!location || typeof location !== "string") return this
         if(!location.includes(", ") && !location.includes("\\")) return this
@@ -66,17 +132,33 @@ class Calendar{
         return this
     }
 
+    /**
+     * 
+     * @param {string} location 
+     * @returns {Calendar}
+     */
     AddTriger(trigger){
         this.trigger = trigger
         return this
     }
 
+    /**
+     * 
+     * @param {string} location 
+     * @returns {Calendar}
+     */
     AddDownloadName(name){
         if(!name || typeof name !== "string" || name.length > 20) return this
         this.download_name = name
         return this
     }
 
+    /**
+     * 
+     * @param {string} rythm
+     * @param {(string|number)} stop 
+     * @returns {Calendar}
+     */
     AddRecurrence(rythm, stop){
         if(typeof rythm !== "string") return this
         if(!(/(hourly|daily|weekly|monthly|yearly)/).test(rythm.toLowerCase())) return this
@@ -92,6 +174,13 @@ class Calendar{
         return this
     }
 
+    /**
+     * 
+     * @param {string} restpath 
+     * @param {boolean} state 
+     * @async
+     * @returns {Promise<string|object>} 
+     */
     async Download(restpath, state){
         let text = this.ToText()
         if(text === "Error") return text
@@ -127,6 +216,11 @@ class Calendar{
 
     }
 
+    /**
+     * 
+     * @param {string} restpath 
+     * @returns {Promise<object>}
+     */
     async getDownloadInfos(restpath){
         return new Promise((resolve, reject) => {
             this.Download(restpath, true)
@@ -135,6 +229,10 @@ class Calendar{
         })
     }
 
+    /**
+     * 
+     * @returns {string}
+     */
     ToText(){
 
         //let text1 = `BEGIN:VCALENDAR;VERSION:2.0;PRODID:autoprog/kamkam;NAME:Work;X-WR-CALNAME:Work;TIMEZONE-ID:Europe/Paris;X-WR-TIMEZONE:Europe/Paris;BEGIN:VEVENT;UID:-${randomnumber};SEQUENCE:0;DTSTAMP:${new Date(Date.now())};DTSTART;TZID=Europe/Paris:${String(this.start).replaceAll("-", "").replaceAll(":", "")};DTEND;TZID=Europe/Paris:${String(this.end).replaceAll("-", "").replaceAll(":", "")}${this.title !== null ? `;SUMMARY:${this.title}` : ""}${this.location !== null ? `;LOCATION:${this.location}` : ""}${this.geo !== null ? `;GEO:${this.geo}` : ""};BEGIN:VALARM;ACTION:DISPLAY${this.description !== null ? `;DESCRIPTION:${this.description}` : ""};TRIGGER:${this.trigger};END:VALARM;STATUS:CONFIRMED;END:VEVENT;END:VCALENDAR`
@@ -182,12 +280,21 @@ class Calendar{
         return text
     }
 
+    /**
+     * 
+     * @returns {buffer}
+     */
     ToBuffer(){
         let text = this.ToText()
         if(text === "Error") return text
         return Buffer.from(text, "utf-8")
     }
 
+    /**
+     * @private
+     * @param {string} da 
+     * @returns {string}
+     */
     #CheckDate(da){
         if(!da || typeof da !== "string") return false
         let second;
