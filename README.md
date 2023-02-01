@@ -89,9 +89,9 @@ Calendar.AddDownloadName("name")//->name.ics
 const DateBook = require("@kamkam1_0/datebook")
 let Calendar = new DateBook.Calendar()
 
-Calendar.ToText()
-Calendar.ToBuffer()
-Calendar.getDownloadInfos()//Gives you the infos based on the simulation of the download-> {name: "01/01/1190", extension: "ics", buffer}
+Calendar.toText()
+Calendar.toBuffer()
+Calendar.downloadInfos()//Gives you the infos based on the simulation of the download-> {name: "01/01/1190", extension: "ics", buffer}
 ```
 
 ### Downloading
@@ -102,19 +102,40 @@ You can simply download the file in the directory of the process.
 ```js
 const DateBook = require("@kamkam1_0/datebook")
 let Calendar = new DateBook.Calendar()
-Calendar.Download()
+Calendar.download()
+
 ```
 
 You can also indicate, based on the process directory, the path to follow.
 ```js
 const DateBook = require("@kamkam1_0/datebook")
 let Calendar = new DateBook.Calendar()
-Calendar.Download("/ics")
+Calendar.download("/ics")
 ```
 
 Finally, you can indicate the entire path to follow.
 ```js
 const DateBook = require("@kamkam1_0/datebook")
 let Calendar = new DateBook.Calendar()
-Calendar.Download("/Users/johndoe/Desktop/Dev/Bot")
+Calendar.download("/Users/johndoe/Desktop/Dev/Bot")
+```
+
+## Grouping Calendars
+With datebook.js, you can choose to group several calendars into one.
+```js
+const DateBook = require("@kamkam1_0/datebook")
+let Calendar = new DateBook.Calendar()
+let Calendar2 = new DateBook.Calendar()
+
+let groupedCalendar = Datebook.joinCalendars([Calendar, Calendar2])
+//OR
+let groupedCalendar = Datebook.joinCalendars([Calendar.toText(), Calendar2])
+```
+
+### Downloading a grouped Calendar
+The path for the download follows the same process as the "traditional path" mentionned above.
+```js
+const DateBook = require("@kamkam1_0/datebook")
+let groupedCalendar = Datebook.joinCalendars([Calendar, Calendar2])
+DateBook.downloadCalendars(groupedCalendar, "path")
 ```

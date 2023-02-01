@@ -1,4 +1,3 @@
-const fs = require("fs")
 class Calendar{
     #start;
     #end;
@@ -49,6 +48,10 @@ class Calendar{
          * @param {(string|null)} download_name
          */
         this.download_name = null
+        /**
+         * @param {object[]} execptionDates
+         */
+        this.execptionDates = []
     }
 
     /**
@@ -71,7 +74,6 @@ class Calendar{
      * @returns {Calendar}
      */
     AddEnd(enddate){
-        this.AddStart()
         enddate = this.#CheckDate(enddate)
         if(!enddate) return this
         if(this.#start !== null && (new Date(enddate)) < (new Date(this.#start))) return this
@@ -176,64 +178,20 @@ class Calendar{
 
     /**
      * 
-     * @param {string} restpath 
-     * @param {boolean} state 
-     * @async
-     * @returns {Promise<string|object>} 
+     * @param {string} date
+     * @returns {Calendar} 
      */
-    async Download(restpath, state){
-        let text = this.ToText()
-        if(text === "Error") return text
-
-        return new Promise((resolve, reject) => {
-            function get_path(orpa, pa, name){
-                if(!name){
-                    if(require("os").platform() === "darwin") return `${orpa}/${pa.replaceAll("\\", "/")}`
-                    if(require("os").platform() === "win32")  return `${orpa}\\${pa.replaceAll("/", "\\")}`
-                }
-                if(require("os").platform() === "darwin") return `${orpa}/${pa.replaceAll("\\", "/")}/${name.replaceAll("\\", "/")}`
-                if(require("os").platform() === "win32")  return `${orpa}\\${pa.replaceAll("/", "\\")}\\${name.replaceAll("/", "\\")}`
-            }
-            let path = process.cwd()
-            if(restpath) path = `${(restpath.startsWith("/") || restpath.startsWith("C:")) ? restpath : `${get_path(process.cwd(), restpath)}`}`
-            fs.readdir(path, (err, files) => {
-                if(err) return reject('Error path')
-                let name = String(this.start).split("T")[0]
-                if(this.download_name && this.download_name.startsWith("#")) name+="-"+this.download_name.slice(1)
-                if(this.download_name && !this.download_name.startsWith("#")) name=this.download_name
-                if(files.includes(`${name}.ics`)){
-                    let totals = files.filter(e => e.startsWith(name)).map(e => e.split(name)[1].split(".")[0].replace("-", "")).filter(e => e !== "")
-                    totals.sort((a,b)=>a-b)
-                    name = `${name}-${String((totals[totals.length - 1] + 1)) === "NaN" ? "1" : (totals[totals.length - 1] + 1)}`
-                }
-
-                if(state) return resolve({name, extension: "ics", buffer: this.ToBuffer()})
-    
-                fs.writeFileSync(get_path(path, `${name}.ics`), text)
-                return resolve(name)
-            })
-        })
-
-    }
-
-    /**
-     * 
-     * @param {string} restpath 
-     * @returns {Promise<object>}
-     */
-    async getDownloadInfos(restpath){
-        return new Promise((resolve, reject) => {
-            this.Download(restpath, true)
-            .then(datas => resolve(datas))
-            .catch(datas => reject(datas))
-        })
+    AddExceptionDate(date){
+        date = this.#CheckDate(date)
+        if(!date) return this
+        this.execptionDates.push(date.replaceAll("-", "").replaceAll(":", ""))
     }
 
     /**
      * 
      * @returns {string}
      */
-    ToText(){
+    toText(){
 
         //let text1 = `BEGIN:VCALENDAR;VERSION:2.0;PRODID:autoprog/kamkam;NAME:Work;X-WR-CALNAME:Work;TIMEZONE-ID:Europe/Paris;X-WR-TIMEZONE:Europe/Paris;BEGIN:VEVENT;UID:-${randomnumber};SEQUENCE:0;DTSTAMP:${new Date(Date.now())};DTSTART;TZID=Europe/Paris:${String(this.start).replaceAll("-", "").replaceAll(":", "")};DTEND;TZID=Europe/Paris:${String(this.end).replaceAll("-", "").replaceAll(":", "")}${this.title !== null ? `;SUMMARY:${this.title}` : ""}${this.location !== null ? `;LOCATION:${this.location}` : ""}${this.geo !== null ? `;GEO:${this.geo}` : ""};BEGIN:VALARM;ACTION:DISPLAY${this.description !== null ? `;DESCRIPTION:${this.description}` : ""};TRIGGER:${this.trigger};END:VALARM;STATUS:CONFIRMED;END:VEVENT;END:VCALENDAR`
 
@@ -248,21 +206,18 @@ class Calendar{
         let datas = [
             {name: "BEGIN", value: "VCALENDAR"},
             {name: "VERSION", value: "2.0"},
-            {name: "PRODID", value: "autoprog/kamkam"},
-            {name: "NAME", value: "Work"},
-            {name: "X-WR-CALNAME", value: "Work"},
-            {name: "TIMEZONE-ID", value: "Europe/Paris"},
-            {name: "X-WR-TIMEZONE", value: "Europe/Paris"},
+            {name: "PRODID", value: "KamKam1_0/datebook.js"},
             {name: "BEGIN", value: "VEVENT"},
             {name: "UID", value: "-"+randomnumber},
             {name: "SEQUENCE", value: "0"},
-            {name: "DTSTAMP", value: new Date(Date.now())},
-            {name: "DTSTART;TZID=Europe/Paris", value: this.start},
-            {name: "DTEND;TZID=Europe/Paris", value: this.end},
+            {name: "DTSTAMP", value: String(new Date(Date.now()))},
+            {name: "DTSTART", value: this.start},
+            {name: "DTEND", value: this.end},
             {name: "SUMMARY", value: this.title},
             {name: "LOCATION", value: this.location},
             {name: "GEO", value: this.geo},
             {name: "RRULE", value: this.recurrence},
+            {name: "EXDATE", value: this.execptionDates},
             {name: "BEGIN", value: "VALARM"},
             {name: "ACTION", value: "DISPLAY"},
             {name: "TRIGGER", value: this.trigger},
@@ -273,21 +228,38 @@ class Calendar{
         ]
 
         let text = datas.filter(da => da.value !== null && da.value !== undefined && da.value !== "").map(da => {
+            if(da.name.startsWith("EXDATE")) return da.value.map(e => `${da.name}:${e}`).join("\n")
             if(typeof da.value === "string") return `${da.name}:${da.value}`
-            else if(typeof da.value === "object") return `${da.name}:`+ Object.entries(da.value).filter(dat => dat[1] !== null && dat[1] !== undefined && dat[1] !== "").map(dat => `${dat[0]}=${dat[1]}`).join(";")
+            if(typeof da.value === "object") return `${da.name}:`+ Object.entries(da.value).filter(dat => dat[1] !== null && dat[1] !== undefined && dat[1] !== "").map(dat => `${dat[0]}=${dat[1]}`).join(";")
         }).join("\n")
-
+        
         return text
     }
 
     /**
      * 
-     * @returns {buffer}
+     * @returns {Buffer}
      */
-    ToBuffer(){
-        let text = this.ToText()
-        if(text === "Error") return text
-        return Buffer.from(text, "utf-8")
+    toBuffer(){
+        return require("./utils").toBuffer(this)
+    }
+
+    /**
+     * 
+     * @param {string} path 
+     * @returns {Promise}
+     */
+    async download(path){
+        return require("./utils").download(this, path)
+    }
+
+    /**
+     * 
+     * @param {string} path 
+     * @returns {Promise}
+     */
+    async downloadInfos(path){
+        return require("./utils").downloadInfos(this, path)
     }
 
     /**
