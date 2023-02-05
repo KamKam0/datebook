@@ -6,7 +6,7 @@ const fs = require("fs")
  * @returns {Buffer|null} 
  */
 module.exports.toBuffer = (Calendar) => {
-    if(((typeof Calendar === "object" && String(Calendar)!=="null") || typeof Calendar.toText !== "function") && typeof Calendar !== "string") return reject(null)
+    if((typeof Calendar === "object" && (String(Calendar)==="null" || typeof Calendar.toText !== "function")) || !["string", "object"].includes(typeof Calendar)) return reject(null)
     let text = typeof Calendar !== "string" ? Calendar.toText() : Calendar
     if(text === "Error") return null
     return Buffer.from(text, "utf-8")
@@ -19,7 +19,7 @@ module.exports.toBuffer = (Calendar) => {
  */
 module.exports.downloadInfos = async (Calendar, restpath) => {
     return new Promise((resolve, reject) => {
-        if((typeof Calendar === "object" && String(Calendar)!=="null") || typeof Calendar.toText !== "function") return reject(null)
+        if(typeof Calendar === "object" && (String(Calendar)==="null" || typeof Calendar.toText !== "function")) return reject(null)
         this.download(Calendar, restpath, true)
         .then(datas => resolve(datas))
         .catch(datas => reject(datas))
@@ -36,7 +36,8 @@ module.exports.downloadInfos = async (Calendar, restpath) => {
  */
 module.exports.download = async (Calendar, restpath, state) => {
     return new Promise((resolve, reject) => {
-        if(((typeof Calendar === "object" && String(Calendar)!=="null") || typeof Calendar.toText !== "function") && typeof Calendar !== "string") return reject(null)
+        if((typeof Calendar === "object" && (String(Calendar)==="null" || typeof Calendar.toText !== "function")) || !["string", "object"].includes(typeof Calendar)) return reject(null)
+        //if(((typeof Calendar === "object" && String(Calendar)!=="null") || typeof Calendar.toText !== "function") && typeof  !== "string")
         let text = typeof Calendar !== "string" ? Calendar.toText() : Calendar
         if(text === "Error") return reject(text)
 
