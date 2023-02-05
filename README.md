@@ -137,5 +137,19 @@ The path for the download follows the same process as the "traditional path" men
 ```js
 const DateBook = require("@kamkam1_0/datebook")
 let groupedCalendar = Datebook.joinCalendars([Calendar, Calendar2])
-DateBook.downloadCalendars(groupedCalendar, "path")
+DateBook.calendars.download(groupedCalendar, "path")
+```
+
+### Getting the downlaod informations about the grouped calendar
+```js
+const DateBook = require("@kamkam1_0/datebook")
+let groupedCalendar = Datebook.joinCalendars([Calendar, Calendar2])
+DateBook.calendars.downloadInfos(groupedCalendar, "path")
+```
+
+### Getting the buffer of the grouped calendar
+```js
+const DateBook = require("@kamkam1_0/datebook")
+let groupedCalendar = Datebook.joinCalendars([Calendar, Calendar2])
+DateBook.calendars.toBuffer(groupedCalendar)
 ```

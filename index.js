@@ -12,5 +12,8 @@ exports.verison = require("./package.json").version
  * @returns {string}
  */
 exports.joinCalendars = require("./joinCalendars")
-exports.downloadCalendars = require("./utils").download
-//possiblité de réunir des calendrier l'un dans l'autre, possiblité d'ajouter des dates d'exceptions aux calendars récurrents
+exports.calendars = {
+    download: require("./utils").download,
+    downloadInfos: require("./utils").downloadInfos,
+    toBuffer: require("./utils").toBuffer
+}

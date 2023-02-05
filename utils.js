@@ -6,8 +6,8 @@ const fs = require("fs")
  * @returns {Buffer|null} 
  */
 module.exports.toBuffer = (Calendar) => {
-    if((typeof Calendar === "object" && String(Calendar)!=="null") || typeof Calendar.toText !== "function") return null
-    let text = Calendar.toText()
+    if(((typeof Calendar === "object" && String(Calendar)!=="null") || typeof Calendar.toText !== "function") && typeof Calendar !== "string") return reject(null)
+    let text = typeof Calendar !== "string" ? Calendar.toText() : Calendar
     if(text === "Error") return null
     return Buffer.from(text, "utf-8")
 }
