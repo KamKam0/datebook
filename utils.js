@@ -1,8 +1,8 @@
-const Calendar = require("./Calendar")
+const calendar = require("./Classes/Calendar")
 const fs = require("fs")
 /**
  * 
- * @param {Calendar} Calendar
+ * @param {calendar} Calendar
  * @returns {Buffer|null} 
  */
 module.exports.toBuffer = (Calendar) => {
@@ -13,7 +13,7 @@ module.exports.toBuffer = (Calendar) => {
 }
 
 /**
- * @param {Calendar} Calendar
+ * @param {calendar} Calendar
  * @param {string} restpath 
  * @returns {Promise<object>}
  */
@@ -28,7 +28,7 @@ module.exports.downloadInfos = async (Calendar, restpath) => {
 
 
 /**
- * @param {Calendar} Calendar
+ * @param {calendar} Calendar
  * @param {string} restpath 
  * @param {boolean} state 
  * @async
@@ -37,7 +37,6 @@ module.exports.downloadInfos = async (Calendar, restpath) => {
 module.exports.download = async (Calendar, restpath, state) => {
     return new Promise((resolve, reject) => {
         if((typeof Calendar === "object" && (String(Calendar)==="null" || typeof Calendar.toText !== "function")) || !["string", "object"].includes(typeof Calendar)) return reject(null)
-        //if(((typeof Calendar === "object" && String(Calendar)!=="null") || typeof Calendar.toText !== "function") && typeof  !== "string")
         let text = typeof Calendar !== "string" ? Calendar.toText() : Calendar
         if(text === "Error") return reject(text)
 
@@ -58,6 +57,7 @@ module.exports.download = async (Calendar, restpath, state) => {
                 name = String(Calendar.start).split("T")[0]
                 if(Calendar.download_name && Calendar.download_name.startsWith("#")) name+="-"+Calendar.download_name.slice(1)
                 if(Calendar.download_name && !Calendar.download_name.startsWith("#")) name=Calendar.download_name
+                if(name === "undefined" && Calendar.content) name = "multiplecalendars"
                 if(files.includes(`${name}.ics`)){
                     let totals = files.filter(e => e.startsWith(name)).map(e => e.split(name)[1].split(".")[0].replace("-", "")).filter(e => e !== "")
                     totals.sort((a,b)=>a-b)
