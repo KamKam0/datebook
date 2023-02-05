@@ -122,6 +122,7 @@ Calendar.download("/Users/johndoe/Desktop/Dev/Bot")
 
 ## Grouping Calendars
 With datebook.js, you can choose to group several calendars into one.
+You can add a name to your grouped calendar (optional).
 ```js
 const DateBook = require("@kamkam1_0/datebook")
 let Calendar = new DateBook.Calendar()
@@ -130,6 +131,10 @@ let Calendar2 = new DateBook.Calendar()
 let groupedCalendar = Datebook.joinCalendars([Calendar, Calendar2])
 //OR
 let groupedCalendar = Datebook.joinCalendars([Calendar.toText(), Calendar2])
+//OR
+let groupedCalendar = Datebook.joinCalendars([Calendar, Calendar2], "sport")
+//OR
+let groupedCalendar = Datebook.joinCalendars([Calendar.toText(), Calendar2], "sport")
 ```
 
 ### Downloading a grouped Calendar
@@ -137,19 +142,19 @@ The path for the download follows the same process as the "traditional path" men
 ```js
 const DateBook = require("@kamkam1_0/datebook")
 let groupedCalendar = Datebook.joinCalendars([Calendar, Calendar2])
-DateBook.calendars.download(groupedCalendar, "path")
+groupedCalendar.download(groupedCalendar, "path")
 ```
 
 ### Getting the downlaod informations about the grouped calendar
 ```js
 const DateBook = require("@kamkam1_0/datebook")
 let groupedCalendar = Datebook.joinCalendars([Calendar, Calendar2])
-DateBook.calendars.downloadInfos(groupedCalendar, "path")
+groupedCalendar.downloadInfos(groupedCalendar, "path")
 ```
 
 ### Getting the buffer of the grouped calendar
 ```js
 const DateBook = require("@kamkam1_0/datebook")
 let groupedCalendar = Datebook.joinCalendars([Calendar, Calendar2])
-DateBook.calendars.toBuffer(groupedCalendar)
+groupedCalendar.toBuffer(groupedCalendar)
 ```

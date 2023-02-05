@@ -1,4 +1,4 @@
-const Cal = require("./Calendar")
+const Cal = require("./Classes/Calendar")
 /**
  * @returns {Cal}
  */
@@ -12,8 +12,3 @@ exports.verison = require("./package.json").version
  * @returns {string}
  */
 exports.joinCalendars = require("./joinCalendars")
-exports.calendars = {
-    download: require("./utils").download,
-    downloadInfos: require("./utils").downloadInfos,
-    toBuffer: require("./utils").toBuffer
-}
