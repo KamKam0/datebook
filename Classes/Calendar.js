@@ -194,9 +194,6 @@ class Calendar extends base{
      * @returns {string}
      */
     toText(){
-
-        //let text1 = `BEGIN:VCALENDAR;VERSION:2.0;PRODID:autoprog/kamkam;NAME:Work;X-WR-CALNAME:Work;TIMEZONE-ID:Europe/Paris;X-WR-TIMEZONE:Europe/Paris;BEGIN:VEVENT;UID:-${randomnumber};SEQUENCE:0;DTSTAMP:${new Date(Date.now())};DTSTART;TZID=Europe/Paris:${String(this.start).replaceAll("-", "").replaceAll(":", "")};DTEND;TZID=Europe/Paris:${String(this.end).replaceAll("-", "").replaceAll(":", "")}${this.title !== null ? `;SUMMARY:${this.title}` : ""}${this.location !== null ? `;LOCATION:${this.location}` : ""}${this.geo !== null ? `;GEO:${this.geo}` : ""};BEGIN:VALARM;ACTION:DISPLAY${this.description !== null ? `;DESCRIPTION:${this.description}` : ""};TRIGGER:${this.trigger};END:VALARM;STATUS:CONFIRMED;END:VEVENT;END:VCALENDAR`
-
         if(!this.title || !this.start || !this.end) return 'Error'
 
         let randomnumber = ""
@@ -230,7 +227,7 @@ class Calendar extends base{
         ]
 
         let text = datas.filter(da => da.value !== null && da.value !== undefined && da.value !== "").map(da => {
-            if(da.name.startsWith("EXDATE")) return da.value.map(e => `${da.name}:${e}`).join("\n")
+            if(da.name.startsWith("EXDATE") && da.value.length > 0) return da.value.map(e => `${da.name}:${e}`).join("\n")
             if(typeof da.value === "string") return `${da.name}:${da.value}`
             if(typeof da.value === "object") return `${da.name}:`+ Object.entries(da.value).filter(dat => dat[1] !== null && dat[1] !== undefined && dat[1] !== "").map(dat => `${dat[0]}=${dat[1]}`).join(";")
         }).join("\n")
