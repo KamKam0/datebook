@@ -16,8 +16,5 @@
   "keywords": ["Datebook", "Calendar"],
   "homepage": "https://github.com/KamKam0/datebook",
   "author": "KamKam <kamkam.dev.contact@gmail.com>",
-  "license": "BSD 2",
-  "dependencies": {
-    "fs": "^0.0.1-security"
-  }
+  "license": "BSD 2"
 }

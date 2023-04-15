@@ -1,5 +1,5 @@
 const calendar = require("./Classes/Calendar")
-const fs = require("fs")
+const fs = require("node:fs")
 /**
  * 
  * @param {calendar} Calendar
@@ -42,11 +42,11 @@ module.exports.download = async (Calendar, restpath, state) => {
 
         function get_path(orpa, pa, name){
             if(!name){
-                if(require("os").platform() === "darwin") return `${orpa}/${pa.replaceAll("\\", "/")}`
-                if(require("os").platform() === "win32")  return `${orpa}\\${pa.replaceAll("/", "\\")}`
+                if(require("node:os").platform() === "darwin") return `${orpa}/${pa.replaceAll("\\", "/")}`
+                if(require("node:os").platform() === "win32")  return `${orpa}\\${pa.replaceAll("/", "\\")}`
             }
-            if(require("os").platform() === "darwin") return `${orpa}/${pa.replaceAll("\\", "/")}/${name.replaceAll("\\", "/")}`
-            if(require("os").platform() === "win32")  return `${orpa}\\${pa.replaceAll("/", "\\")}\\${name.replaceAll("/", "\\")}`
+            if(require("node:os").platform() === "darwin") return `${orpa}/${pa.replaceAll("\\", "/")}/${name.replaceAll("\\", "/")}`
+            if(require("node:os").platform() === "win32")  return `${orpa}\\${pa.replaceAll("/", "\\")}\\${name.replaceAll("/", "\\")}`
         }
         let path = process.cwd()
         if(restpath) path = `${(restpath.startsWith("/") || restpath.startsWith("C:")) ? restpath : `${get_path(process.cwd(), restpath)}`}`
