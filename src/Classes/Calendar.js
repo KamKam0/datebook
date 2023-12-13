@@ -202,16 +202,21 @@ class Calendar extends base{
             randomnumber += Math.floor(Math.random() * 2345)
         }
 
+        let timeZoneName = Intl.DateTimeFormat().resolvedOptions().timeZone
         let datas = [
             {name: "BEGIN", value: "VCALENDAR"},
             {name: "VERSION", value: "2.0"},
-            {name: "PRODID", value: "KamKam1_0/datebook.js"},
+            {name: "PRODID", value: "-KamKam1_0/datebook.js"},
+            {name: "NAME", value: this.title},
+            {name: "X-WR-CALNAME", value: this.title},
+            {name: "TIMEZONE-ID", value: timeZoneName},
+            {name: "X-WR-TIMEZONE", value: timeZoneName},
             {name: "BEGIN", value: "VEVENT"},
             {name: "UID", value: "-"+randomnumber},
             {name: "SEQUENCE", value: "0"},
-            {name: "DTSTAMP", value: String(new Date(Date.now()))},
-            {name: "DTSTART", value: this.start},
-            {name: "DTEND", value: this.end},
+            {name: "DTSTAMP", value: this.#getDTDate()},
+            {name: `DTSTART;TZID=${timeZoneName}`, value: this.start},
+            {name: `DTEND;TZID=${timeZoneName}`, value: this.end},
             {name: "SUMMARY", value: this.title},
             {name: "LOCATION", value: this.location},
             {name: "GEO", value: this.geo},
@@ -220,19 +225,45 @@ class Calendar extends base{
             {name: "BEGIN", value: "VALARM"},
             {name: "ACTION", value: "DISPLAY"},
             {name: "TRIGGER", value: this.trigger},
+            {name: "DESCRIPTION", value: this.description},
             {name: "END", value: "VALARM"},
             {name: "STATUS", value: "CONFIRMED"},
             {name: "END", value: "VEVENT"},
             {name: "END", value: "VCALENDAR"}
         ]
 
-        let text = datas.filter(da => da.value !== null && da.value !== undefined && da.value !== "").map(da => {
-            if(da.name.startsWith("EXDATE") && da.value.length > 0) return da.value.map(e => `${da.name}:${e}`).join("\n")
+        let text = datas
+        .filter(da => {
+            if (!da.value) {
+                return false
+            }
+
+            if ((typeof da.value === 'string' || Array.isArray(da.value)) && !da.value.length) {
+                return null
+            }
+
+            return true
+        })
+        .map(da => {
+            if(da.name.startsWith("EXDATE")) return da.value.map(e => `${da.name}:${e}`).join("\n")
             if(typeof da.value === "string") return `${da.name}:${da.value}`
             if(typeof da.value === "object") return `${da.name}:`+ Object.entries(da.value).filter(dat => dat[1] !== null && dat[1] !== undefined && dat[1] !== "").map(dat => `${dat[0]}=${dat[1]}`).join(";")
-        }).join("\n")
+        })
+        .join("\n")
         
         return text
+    }
+
+    #getDTDate(date=Date.now()){
+        let processedDate = new Date(date)
+        .toISOString()
+        .split('-')
+        .join('')
+        .split(':')
+        .join('')
+        .split('.')[0]
+
+        return processedDate+'Z'
     }
 
     /**
