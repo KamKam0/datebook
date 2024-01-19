@@ -1,3 +1,5 @@
+const utils = require('../utils')
+
 class base{
     constructor(){}
 
@@ -6,7 +8,7 @@ class base{
      * @returns {Buffer}
      */
     toBuffer(){
-        return require("../utils").toBuffer(this)
+        return utils.toBuffer(this)
     }
 
     /**
@@ -15,7 +17,7 @@ class base{
      * @returns {Promise}
      */
     async download(path){
-        return require("../utils").download(this, path)
+        return utils.download(this, path)
     }
 
     /**
@@ -24,7 +26,7 @@ class base{
      * @returns {Promise}
      */
     async downloadInfos(path){
-        return require("../utils").downloadInfos(this, path)
+        return utils.downloadInfos(this, path)
     }
 }
 
