@@ -187,6 +187,7 @@ class Calendar extends base{
         date = this.#CheckDate(date)
         if(!date) return this
         this.execptionDates.push(date.replaceAll("-", "").replaceAll(":", ""))
+        return this
     }
 
     /**

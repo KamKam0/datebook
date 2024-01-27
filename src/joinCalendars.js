@@ -4,6 +4,7 @@
  * @returns {string|object}
  */
 const Calendars = require("./Classes/Calendars")
+
 module.exports = (calendars, name) => {
     if((!calendars || !Array.isArray(calendars)) || (calendars.filter(e => typeof e === "string" || ((typeof e === "object" && String(e)!=="null") && typeof e.toText === "function")).length !== calendars.length)) return null
     calendars = calendars.map(e => {
