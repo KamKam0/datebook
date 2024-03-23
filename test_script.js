@@ -11,6 +11,7 @@ const datebook = new index.Calendar()
 .AddGeo('48.87175623071544, 2.3007789558675404')
 .AddRecurrence('daily', 10)
 .AddExceptionDate('2024-01-05')
+.SetTimeZone('UTC')
 console.log('datebook success')
 console.log(datebook)
 

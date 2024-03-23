@@ -9,6 +9,10 @@ class Calendar extends base{
          */
         this.title = null
         /**
+         * @param {(string|null)} timeZone
+         */
+        this.timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+        /**
          * @param {(string|null)} start
          */
         this.start = null
@@ -190,6 +194,14 @@ class Calendar extends base{
         return this
     }
 
+    SetTimeZone(timeZone) {
+        if (!timeZone) {
+            return this
+        }
+        this.timeZone = timeZone
+        return this
+    }
+
     /**
      * 
      * @returns {string}
@@ -203,7 +215,7 @@ class Calendar extends base{
             randomnumber += Math.floor(Math.random() * 2345)
         }
 
-        let timeZoneName = Intl.DateTimeFormat().resolvedOptions().timeZone
+        let timeZoneName = this.timeZone
         let datas = [
             {name: "BEGIN", value: "VCALENDAR"},
             {name: "VERSION", value: "2.0"},

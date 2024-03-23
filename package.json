@@ -1,6 +1,6 @@
 {
   "name": "@kamkam1_0/datebook",
-  "version": "1.5.8",
+  "version": "1.5.9",
   "description": "",
   "main": "./src/index.js",
   "scripts": {

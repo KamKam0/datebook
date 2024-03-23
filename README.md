@@ -42,6 +42,7 @@ let Calendar = new DateBook.Calendar()
 .AddDescription("This is a description")
 .AddGeo("48.861919983985295, 2.3379453552360845")
 .AddLocation("91, Rue de Rivoli, 75001 Paris")
+.SetTimeZone('Europe/Paris')
 ```
 
 ### Recurrence
